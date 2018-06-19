@@ -217,5 +217,5 @@ if __name__ == '__main__':
          debug_flag=args.loglevel==logging.DEBUG, new_window_flag=args.window)
     end = timer()
     elapsed_t = int(end-start)
-    with open(str("elapsedtime_"+str(os.path.basename(sys.argv[0])+".txt"), 'w') as output_x:
+    with open(str("elapsedtime_"+str(os.path.basename(sys.argv[0]))+".txt"), 'w') as output_x:
               output_x.write("elapsed time:\n"+str(elapsed_t)+" seconds")

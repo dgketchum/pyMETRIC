@@ -340,5 +340,5 @@ if __name__ == '__main__':
          no_final_plots=args.no_final_plots, no_temp_plots=args.no_temp_plots)
     end = timer()
     elapsed_t = int(end-start)
-    with open(str("elapsedtime_"+str(os.path.basename(sys.argv[0])+".txt"), 'w') as output_x:
+    with open(str("elapsedtime_"+str(os.path.basename(sys.argv[0]))+".txt"), 'w') as output_x:
               output_x.write("elapsed time:\n"+str(elapsed_t)+" seconds")

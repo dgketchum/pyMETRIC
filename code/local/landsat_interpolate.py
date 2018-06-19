@@ -11,6 +11,7 @@ from multiprocessing import cpu_count
 import os
 import subprocess
 import sys
+from timeit import default_timer as timer
 
 from python_common import open_ini, read_param, parse_int_set
 
@@ -238,6 +239,7 @@ def arg_parse():
 
 if __name__ == '__main__':
     args = arg_parse()
+    start = timer()
 
     logging.basicConfig(level=args.loglevel, format='%(message)s')
     logging.info('\n{}'.format('#' * 80))
@@ -252,3 +254,7 @@ if __name__ == '__main__':
          overwrite_flag=args.overwrite, mp_procs=args.multiprocessing,
          delay=args.delay, debug_flag=args.loglevel==logging.DEBUG,
          no_file_logging=args.no_file_logging)
+    end = timer()
+    elapsed_t = int(end-start)
+    with open(str("elapsedtime_"+str(os.path.basename(sys.argv[0])+".txt"), 'w') as output_x:
+              output_x.write("elapsed time:\n"+str(elapsed_t)+" seconds")

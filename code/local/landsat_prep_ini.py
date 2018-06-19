@@ -741,6 +741,7 @@ def arg_parse():
 
 if __name__ == '__main__':
     args = arg_parse()
+    start = timer()
 
     logging.basicConfig(level=args.loglevel, format='%(message)s')
     logging.info('\n{}'.format('#' * 80))

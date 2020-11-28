@@ -8,7 +8,18 @@ import math
 
 import numpy as np
 
-import et_common
+try:
+    import et_common
+    import et_image
+    import et_numpy
+    import python_common as dripy
+except ModuleNotFoundError:
+    import sys
+    sys.path.append('/home/dgketchum/PycharmProjects/pymetric/code')
+    from support import et_common
+    from support import et_image
+    from support import et_numpy
+    from support import python_common as dripy
 
 
 def cos_theta_spatial_func(time, doy, dr, lon, lat):

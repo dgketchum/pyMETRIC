@@ -17,7 +17,12 @@ import numpy as np
 # Used by soil water balance point_swb_func
 from osgeo import gdal, ogr, osr
 
-import python_common as dripy
+try:
+    import python_common as dripy
+except ModuleNotFoundError:
+    import sys
+    sys.path.append('/home/dgketchum/PycharmProjects/pymetric/code')
+    from support import python_common as dripy
 
 
 def landsat_folder_split(landsat_ws):

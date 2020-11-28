@@ -13,7 +13,18 @@ import drigo
 import numpy as np
 from osgeo import gdal, ogr, osr
 
-import et_common
+try:
+    import et_common
+    import et_image
+    import et_numpy
+    import python_common as dripy
+except ModuleNotFoundError:
+    import sys
+    sys.path.append('/home/dgketchum/PycharmProjects/pymetric/code')
+    from support import et_common
+    from support import et_image
+    from support import et_numpy
+    from support import python_common as dripy
 
 
 class InvalidImage(Exception):

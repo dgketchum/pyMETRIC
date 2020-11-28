@@ -18,11 +18,18 @@ import numpy as np
 from scipy import ndimage
 from osgeo import gdal
 
-import et_common
-import et_image
-import et_numpy
-import python_common as dripy
-
+try:
+    import et_common
+    import et_image
+    import et_numpy
+    import python_common as dripy
+except ModuleNotFoundError:
+    import sys
+    sys.path.append('/home/dgketchum/PycharmProjects/pymetric/code')
+    from support import et_common
+    from support import et_image
+    from support import et_numpy
+    from support import python_common as dripy
 
 def main(image_ws, ini_path, bs=2048, stats_flag=False, overwrite_flag=False):
     """Prep a Landsat scene for METRIC
@@ -673,56 +680,6 @@ def main(image_ws, ini_path, bs=2048, stats_flag=False, overwrite_flag=False):
             if stats_flag:
                 drigo.raster_statistics(image.refl_toa_raster)
 
-        # # Process each TOA band
-        # # for band, band_i in sorted(image.band_toa_dict.items()):
-        # for band, dn_image in sorted(dn_image_dict.items()):
-        #     thermal_band_flag = (band == image.thermal_band)
-        #     #  Set 0 as nodata value
-        #     drigo.raster_path_set_nodata(dn_image, 0)
-        #     #  Calculate TOA reflectance
-        #     dn_array, dn_nodata = drigo.raster_to_array(
-        #         dn_image, 1, common_extent)
-        #     dn_array = dn_array.astype(np.float64)
-        #     # dn_array = dn_array.astype(np.float32)
-        #     dn_array[dn_array == 0] = np.nan
-        #     #
-        #     if (image.type in ['Landsat4', 'Landsat5', 'Landsat7'] and
-        #         not thermal_band_flag):
-        #         refl_toa_array = et_numpy.l457_refl_toa_band_func(
-        #             dn_array, image.cos_theta_solar,
-        #             image.dr, image.esun_dict[band],
-        #             image.lmin_dict[band], image.lmax_dict[band],
-        #             image.qcalmin_dict[band], image.qcalmax_dict[band])
-        #             # image.rad_mult_dict[band], image.rad_add_dict[band])
-        #     elif (image.type in ['Landsat4', 'Landsat5', 'Landsat7'] and
-        #           thermal_band_flag):
-        #         refl_toa_array = et_numpy.l457_ts_bt_band_func(
-        #             dn_array, image.lmin_dict[band], image.lmax_dict[band],
-        #             image.qcalmin_dict[band], image.qcalmax_dict[band],
-        #             # image.rad_mult_dict[band], image.rad_add_dict[band],
-        #             image.k1_dict[band], image.k2_dict[band])
-        #     elif (image.type in ['Landsat8'] and
-        #           not thermal_band_flag):
-        #         refl_toa_array = et_numpy.l8_refl_toa_band_func(
-        #             dn_array, image.cos_theta_solar,
-        #             image.refl_mult_dict[band], image.refl_add_dict[band])
-        #     elif (image.type in ['Landsat8'] and
-        #           thermal_band_flag):
-        #         refl_toa_array = et_numpy.l8_ts_bt_band_func(
-        #             dn_array,
-        #             image.rad_mult_dict[band], image.rad_add_dict[band],
-        #             image.k1_dict[band], image.k2_dict[band])
-        #     # refl_toa_array = et_numpy.refl_toa_band_func(
-        #     #     dn_array, cos_theta_solar_flt,
-        #     #     image.dr, image.esun_dict[band],
-        #     #     image.lmin_dict[band], image.lmax_dict[band],
-        #     #     image.qcalmin_dict[band], image.qcalmax_dict[band],
-        #     #     thermal_band_flag)
-        #     drigo.array_to_comp_raster(
-        #         refl_toa_array.astype(np.float32), image.refl_toa_raster,
-        #         image.band_toa_dict[band], common_array)
-        #     del refl_toa_array, dn_array
-
 
     # Calculate brightness temperature
     if calc_ts_bt_flag:
@@ -1109,16 +1066,20 @@ def arg_parse():
 
 
 if __name__ == '__main__':
-    args = arg_parse()
-
-    logging.basicConfig(level=args.loglevel, format='%(message)s')
-    logging.info('\n{}'.format('#' * 80))
-    log_f = '{:<20s} {}'
-    logging.info(log_f.format('Run Time Stamp:', datetime.now().isoformat(' ')))
-    logging.info(log_f.format('Current Directory:', args.workspace))
-
-    # Delay
-    sleep(random.uniform(0, max([0, args.delay])))
+    # args = arg_parse()
+    #
+    # logging.basicConfig(level=args.loglevel, format='%(message)s')
+    # logging.info('\n{}'.format('#' * 80))
+    # log_f = '{:<20s} {}'
+    # logging.info(log_f.format('Run Time Stamp:', datetime.now().isoformat(' ')))
+    # logging.info(log_f.format('Current Directory:', args.workspace))
+    #
+    # # Delay
+    # sleep(random.uniform(0, max([0, args.delay])))
+    args = argparse.Namespace(blocksize=2048, delay=0, ini='/home/dgketchum/PycharmProjects/pymetric/ini/uy_2016.ini',
+                              loglevel=10, overwrite=False, smooth=False, stats=True,
+                              workspace='/media/hdisk/IrrigationGIS/upper_yellowstone/metric/'
+                                        '2016/p038r028/LE07_L1TP_038028_20160609_20160901_01_T1')
 
     main(image_ws=args.workspace, ini_path=args.ini, bs=args.blocksize,
          stats_flag=args.stats, overwrite_flag=args.overwrite)

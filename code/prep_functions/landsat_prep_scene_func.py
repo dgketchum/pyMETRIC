@@ -739,18 +739,10 @@ def main(image_ws, ini_path, bs=2048, stats_flag=False, overwrite_flag=False):
         # Get NLDAS properties from one of the images
         input_ws = os.path.join(
             metric_etr_input_ws, str(image_prev_dt.year))
-        try:
-            input_path = [
-                os.path.join(input_ws, file_name)
-                for file_name in os.listdir(input_ws)
-                for match in [metric_hourly_re.match(file_name)]
-                if (match and
-                    (image_prev_dt.strftime('%Y%m%d') ==
-                     match.group('YYYYMMDD')))][0]
-        except IndexError:
-            logging.error('  No hourly file for {}'.format(
-                image_prev_dt.strftime('%Y-%m-%d %H00')))
-            return False
+        strft = image_prev_dt.strftime('%Y%m%d')
+        input_path = os.path.join(input_ws, 'etr_{}_hourly_nldas.img'.format(strft))
+        assert os.path.exists(input_path)
+
         try:
             input_ds = gdal.Open(input_path)
             input_osr = drigo.raster_ds_osr(input_ds)
@@ -794,32 +786,20 @@ def main(image_ws, ini_path, bs=2048, stats_flag=False, overwrite_flag=False):
 
             # Technically previous and next could come from different days
             # or even years, although this won't happen in the U.S.
-            try:
-                prev_path = [
-                    os.path.join(prev_ws, input_name)
-                    for input_name in os.listdir(prev_ws)
-                    for input_match in [input_re.match(input_name)]
-                    if (input_match and
-                        (prev_dt.strftime('%Y%m%d') ==
-                         input_match.group('YYYYMMDD')))][0]
-                logging.debug('    Input prev: {}'.format(prev_path))
-            except IndexError:
-                logging.error('  No previous hourly file')
-                logging.error('    {}'.format(prev_dt))
-                return False
-            try:
-                next_path = [
-                    os.path.join(next_ws, input_name)
-                    for input_name in os.listdir(next_ws)
-                    for input_match in [input_re.match(input_name)]
-                    if (input_match and
-                        (next_dt.strftime('%Y%m%d') ==
-                         input_match.group('YYYYMMDD')))][0]
-                logging.debug('    Input next: {}'.format(next_path))
-            except IndexError:
-                logging.error('  No next hourly file')
-                logging.error('    {}'.format(next_dt))
-                return False
+
+            path = os.path.normpath(prev_ws)
+            var = path.split(os.sep)[-2]
+            dt_str = image_prev_dt.strftime('%Y%m%d')
+            prev_path = os.path.join(prev_ws, '{}_{}_hourly_nldas.img'.format(var, dt_str))
+            assert os.path.exists(prev_path)
+            logging.debug('    Input prev: {}'.format(prev_path))
+
+            path = os.path.normpath(next_ws)
+            var = path.split(os.sep)[-2]
+            dt_str = image_prev_dt.strftime('%Y%m%d')
+            next_path = os.path.join(next_ws, '{}_{}_hourly_nldas.img'.format(var, dt_str))
+            assert os.path.exists(next_path)
+            logging.debug('    Input next: {}'.format(next_path))
 
             # Band numbers are 1's based
             prev_band = int(prev_dt.strftime('%H')) + 1
@@ -896,19 +876,11 @@ def main(image_ws, ini_path, bs=2048, stats_flag=False, overwrite_flag=False):
             if not os.path.isfile(image.metric_etr_24hr_raster):
                 etr_prev_ws = os.path.join(
                     metric_etr_input_ws, str(image_prev_dt.year))
-                try:
-                    input_path = [
-                        os.path.join(etr_prev_ws, file_name)
-                        for file_name in os.listdir(etr_prev_ws)
-                        for match in [metric_daily_re.match(file_name)]
-                        if (match and
-                            (image_prev_dt.strftime('%Y%m%d') ==
-                             match.group('YYYYMMDD')))][0]
-                    logging.debug('    Input: {}'.format(input_path))
-                except IndexError:
-                    logging.error('  No daily file for {}'.format(
-                        image_prev_dt.strftime('%Y-%m-%d')))
-                    return False
+
+                strft = image_prev_dt.strftime('%Y%m%d')
+                input_path = os.path.join(etr_prev_ws, 'etr_{}_nldas.img'.format(strft))
+                assert os.path.exists(input_path)
+
                 output_array = drigo.raster_to_array(
                     input_path, mask_extent=common_gcs_extent,
                     return_nodata=False)
@@ -1066,20 +1038,21 @@ def arg_parse():
 
 
 if __name__ == '__main__':
-    # args = arg_parse()
-    #
-    # logging.basicConfig(level=args.loglevel, format='%(message)s')
-    # logging.info('\n{}'.format('#' * 80))
-    # log_f = '{:<20s} {}'
-    # logging.info(log_f.format('Run Time Stamp:', datetime.now().isoformat(' ')))
-    # logging.info(log_f.format('Current Directory:', args.workspace))
-    #
-    # # Delay
-    # sleep(random.uniform(0, max([0, args.delay])))
-    args = argparse.Namespace(blocksize=2048, delay=0, ini='/home/dgketchum/PycharmProjects/pymetric/ini/uy_2016.ini',
-                              loglevel=10, overwrite=False, smooth=False, stats=True,
-                              workspace='/media/hdisk/IrrigationGIS/upper_yellowstone/metric/'
-                                        '2016/p038r028/LE07_L1TP_038028_20160609_20160901_01_T1')
+    args = arg_parse()
+
+    logging.basicConfig(level=args.loglevel, format='%(message)s')
+    logging.info('\n{}'.format('#' * 80))
+    log_f = '{:<20s} {}'
+    logging.info(log_f.format('Run Time Stamp:', datetime.now().isoformat(' ')))
+    logging.info(log_f.format('Current Directory:', args.workspace))
+
+    # Delay
+    sleep(random.uniform(0, max([0, args.delay])))
+
+    # args = argparse.Namespace(blocksize=2048, delay=0, ini='/home/dgketchum/PycharmProjects/pymetric/ini/uy_2016.ini',
+    #                           loglevel=10, overwrite=False, smooth=False, stats=True,
+    #                           workspace='/media/hdisk/IrrigationGIS/upper_yellowstone/metric/'
+    #                                     '2016/p038r028/LE07_L1TP_038028_20160609_20160901_01_T1')
 
     main(image_ws=args.workspace, ini_path=args.ini, bs=args.blocksize,
          stats_flag=args.stats, overwrite_flag=args.overwrite)

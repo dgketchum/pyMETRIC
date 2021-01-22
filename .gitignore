@@ -41,3 +41,5 @@ __pycache__/
 /lolo_metric.sh
 /uy_metric.sh
 /uy_dataprep.sh
+/teton_metric.sh
+/teton_dataprep.sh

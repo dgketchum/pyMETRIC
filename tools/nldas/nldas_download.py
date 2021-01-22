@@ -66,6 +66,7 @@ def main(username, password, grb_ws, scene_list_path=None,
             'exiting\n')
         return False
     if scene_list_path:
+        print(scene_list_path)
         if not os.path.isfile(scene_list_path):
             logging.error('\nERROR: The Landsat scene list does not exist\n')
             return False

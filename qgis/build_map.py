@@ -4,25 +4,27 @@ import re
 import lxml.etree as et
 from unicodedata import normalize
 
-COLD = '/media/research/IrrigationGIS/upper_yellowstone/cold.shp'
-HOT = '/media/research/IrrigationGIS/upper_yellowstone/hot.shp'
-FIELDS = '/media/research/IrrigationGIS/openET/MT/statewide_water_plan_sid.shp'
+PIXELS = '/media/research/IrrigationGIS/teton/PIXELS'
 
 
-def paste_pixel_points(dest):
-    point_src = os.path.dirname(HOT)
+def copytree(src, dst):
+    for item in os.listdir(src):
+        d = os.path.join(dst, item)
+        # if os.path.isfile(d):
+        #     try:
+        #         os.remove(d)
+        #     except FileNotFoundError:
+        #         pass
+        if not os.path.isdir(dst):
+            os.mkdir(dst)
+        s = os.path.join(src, item)
+        shutil.copyfile(s, d, follow_symlinks=False)
 
-    for p in ['hot', 'cold']:
-        _src = [os.path.join(point_src, x) for x in os.listdir(point_src) if p in os.path.basename(x)]
-        _dst = [os.path.join(dest, 'PIXELS',  x) for x in os.listdir(point_src) if p in os.path.basename(x)]
 
-        [shutil.copyfile(s, d) for s, d in zip(_src, _dst)]
-
-
-def modify_qgs(template, input_loc):
+def modify_qgs(template, input_loc, fields):
     sources = {'cold': os.path.join(input_loc, 'PIXELS', 'cold.shp'),
                'hot': os.path.join(input_loc, 'PIXELS', 'hot.shp'),
-               'statewide_water_plan_sid': '/media/research/IrrigationGIS/openET/MT/statewide_water_plan_sid.shp',
+               'fields': fields,
                'hot_pixel_suggestion': os.path.join(input_loc, 'PIXEL_REGIONS',
                                                     'hot_pixel_suggestion.img'),
                'cold_pixel_suggestion': os.path.join(input_loc, 'PIXEL_REGIONS',
@@ -55,21 +57,25 @@ def modify_qgs(template, input_loc):
     with open(output, 'w') as out_file:
         for line in string.splitlines():
             out_file.write(line)
-    print('wrote {}'.format(output))
+    print('{}'.format(output))
 
 
 if __name__ == '__main__':
     home = os.path.expanduser('~')
-    for year in [2016, 2017, 2018]:
-        path = os.path.join('/media/research/IrrigationGIS/upper_yellowstone/metric/{}'.format(year))
-        template = '/media/research/IrrigationGIS/upper_yellowstone/qgs_template.qgs'
+    map_count = 0
+    field_bounds = '/media/research/IrrigationGIS/upper_yellowstone/metric/study_area/uy_fields_all.shp'
+    template = '/media/research/IrrigationGIS/teton/qgs_template.qgs'
+    for year in [2015, 2016, 2019]:
+        path = os.path.join('/media/research/IrrigationGIS/teton/metric/{}'.format(year))
         targets = []
-        path_rows = ['p038r028', 'p038r029', 'p039r028', 'p039r029']
+        path_rows = ['p039r027', 'p040r027']
         for pr in path_rows:
             rt = os.path.join(path, pr)
             images = [os.path.join(rt, x) for x in os.listdir(rt) if os.path.isdir(os.path.join(rt, x))]
             missing = [x for x in images if 'PIXELS' not in os.listdir(x)]
             for i in images:
-                # paste_pixel_points(i)
-                modify_qgs(template, i)
+                copytree(PIXELS, os.path.join(i, 'PIXELS'))
+                modify_qgs(template, i, field_bounds)
+                map_count += 1
+    print('made {} maps'.format(map_count))
 # ========================= EOF ===================================================
